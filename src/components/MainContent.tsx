@@ -1,12 +1,13 @@
 "use client";
-import { MapContainer, TileLayer, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, useMap, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SearchBox from "./SearchBox";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faLocation } from '@fortawesome/free-solid-svg-icons'
+import { faLocation, faSearch } from '@fortawesome/free-solid-svg-icons'
+import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 
-var zoomIn = 16;
+let zoomIn = 16;
 
 interface PositionProps {
     position: [number, number]; // Latitude and Longitude
@@ -19,10 +20,11 @@ const ChangeMapView: React.FC<PositionProps> = ({ position }) => {
 };
 
 const VietnamMap = () => {
-
     const [position, setPosition] = useState<[number, number]>([
         21.0285, 105.8542,
     ]); // Default coordinates of Vietnam
+    const [isLocate, setIsLocate] = useState(false); // Track if user location is found
+
     // Function to get user's current location
     const locateUser = () => {
         if (navigator.geolocation) {
@@ -31,6 +33,7 @@ const VietnamMap = () => {
                 (position) => {
                     const { latitude, longitude } = position.coords;
                     setPosition([latitude, longitude]); // Update position to user's location
+                    setIsLocate(true); // Set isLocate to true after finding the location
                 },
                 (error) => {
                     console.error("Error getting user location:", error);
@@ -39,6 +42,13 @@ const VietnamMap = () => {
         } else {
             alert("Geolocation is not supported by this browser.");
         }
+    };
+
+    // Handle search for starting point
+    const handleStartChange = (newStart: [number, number]) => {
+        zoomIn = 16;
+        setPosition(newStart); // Update the map's position to the coordinates
+        setIsLocate(false); // Set isLocate to false after searching
     };
 
     return (
@@ -53,10 +63,17 @@ const VietnamMap = () => {
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 />
                 <ChangeMapView position={position} />
+
+                {/* User Location Marker */}
+                {isLocate && position && (
+                    <Marker position={position}>
+                        <Popup>You are here</Popup>
+                    </Marker>
+                )}
             </MapContainer>
-            {/* Container for the search box and locate button */}
+
             <div className="fixed z-50 top-4 left-1/2 transform -translate-x-1/2 flex space-x-4">
-                <SearchBox setPosition={setPosition} /> {/* Search box for finding locations */}
+                <SearchBox setPosition={handleStartChange} /> {/* Search box for finding locations */}
             </div>
             {/* Locate button positioned at bottom right */}
             <div className="fixed z-50 bottom-4 right-4">
@@ -70,5 +87,6 @@ const VietnamMap = () => {
         </div>
     );
 };
+
 
 export default VietnamMap;

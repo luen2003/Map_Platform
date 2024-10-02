@@ -1,5 +1,7 @@
 "use client";
 import { useState } from "react";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faLocation, faSearch } from '@fortawesome/free-solid-svg-icons'
 
 interface SearchBoxProps {
     setPosition: (position: [number, number]) => void; // Prop to update map position
@@ -35,7 +37,7 @@ const SearchBox: React.FC<SearchBoxProps> = ({ setPosition }) => {
                 type="submit" // Submit button for searching
                 className="ml-2 bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition duration-300"
             >
-                Tìm kiếm
+                <FontAwesomeIcon icon={faSearch} />
             </button>
         </form>
     );
