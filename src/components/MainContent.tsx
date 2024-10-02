@@ -6,6 +6,7 @@ import SearchBox from "./SearchBox";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faLocation } from '@fortawesome/free-solid-svg-icons'
 
+var zoomIn = 16;
 
 interface PositionProps {
     position: [number, number]; // Latitude and Longitude
@@ -13,18 +14,19 @@ interface PositionProps {
 
 const ChangeMapView: React.FC<PositionProps> = ({ position }) => {
     const map = useMap();
-    map.setView(position, 16); // Update the map's position to the coordinates
+    map.setView(position, zoomIn); // Update the map's position to the coordinates
     return null;
 };
 
 const VietnamMap = () => {
+
     const [position, setPosition] = useState<[number, number]>([
         21.0285, 105.8542,
     ]); // Default coordinates of Vietnam
-
     // Function to get user's current location
     const locateUser = () => {
         if (navigator.geolocation) {
+            zoomIn = 30;
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     const { latitude, longitude } = position.coords;
