@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import SearchBox from "./SearchBox";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLocation, faDirections } from '@fortawesome/free-solid-svg-icons';
+import Knob from "./Knob"; // Import Knob component
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import L from 'leaflet';
 import 'leaflet-routing-machine';
@@ -21,7 +22,8 @@ const VietnamMap = () => {
     const [markerLayer, setMarkerLayer] = useState<any>(null);
     const [endMarkerLayer, setEndMarkerLayer] = useState<any>(null);
     
-    const [startText, setStartText] = useState(""); // Thêm state cho ô tìm kiếm điểm xuất phát
+    const [startText, setStartText] = useState("");
+    const [rotation, setRotation] = useState(0); // Thêm state cho góc xoay
 
     const locateUser = () => {
         if (navigator.geolocation) {
@@ -30,12 +32,9 @@ const VietnamMap = () => {
                     const { latitude, longitude } = position.coords;
                     setPosition([latitude, longitude]);
                     setIsLocate(true);
-
-                    // Đặt vị trí định vị là điểm xuất phát
                     setStart([latitude, longitude]);
-                    setEnd([latitude, longitude]); // Đặt vị trí định vị là điểm đến
-                    setStartText(`Vị trí hiện tại: [${latitude.toFixed(4)}, ${longitude.toFixed(4)}]`); // Cập nhật ô tìm kiếm
-
+                    setEnd([latitude, longitude]);
+                    setStartText(`Vị trí hiện tại: [${latitude.toFixed(4)}, ${longitude.toFixed(4)}]`);
                     if (map) {
                         map.setView([latitude, longitude], zoomIn);
                     }
@@ -53,8 +52,7 @@ const VietnamMap = () => {
         setStart(newStart);
         setPosition(newStart);
         setIsLocate(false);
-        setStartText(text); // Cập nhật text cho ô tìm kiếm
-
+        setStartText(text);
         if (markerLayer) {
             map.removeLayer(markerLayer);
         }
@@ -65,13 +63,12 @@ const VietnamMap = () => {
 
     const handleEndChange = (newEnd: [number, number]) => {
         setEnd(newEnd);
-        
         if (endMarkerLayer) {
             map.removeLayer(endMarkerLayer);
         }
         const redMarker = L.marker(newEnd, {
             icon: L.icon({
-                iconUrl: '/marker.png', // Red location marker icon
+                iconUrl: '/marker.png',
                 iconSize: [30, 41],
                 iconAnchor: [12, 41],
                 popupAnchor: [1, -34],
@@ -98,6 +95,13 @@ const VietnamMap = () => {
         }
     };
 
+    const handleRotate = (angle: number) => {
+        setRotation(angle);
+        if (map) {
+            map.getContainer().style.transform = `rotate(${angle}deg)`;
+        }
+    };
+
     useEffect(() => {
         if (map) {
             map.on('click', (e: L.LeafletMouseEvent) => {
@@ -105,6 +109,40 @@ const VietnamMap = () => {
                 map.setZoom(zoomIn);
             });
         }
+    }, [map]);
+    // Touch event handling for rotation
+    useEffect(() => {
+        const handleTouchStart = (e: TouchEvent) => {
+            const startX = e.touches[0].clientX;
+            const startY = e.touches[0].clientY;
+
+            const handleTouchMove = (e: TouchEvent) => {
+                const currentX = e.touches[0].clientX;
+                const currentY = e.touches[0].clientY;
+                const deltaX = currentX - startX;
+                const deltaY = currentY - startY;
+                const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+
+                handleRotate(angle);
+            };
+
+            const handleTouchEnd = () => {
+                if (map) {
+                map.removeEventListener("touchmove", handleTouchMove);
+                map.removeEventListener("touchend", handleTouchEnd);
+                }
+            };
+            if (map) {
+                map.addEventListener("touchmove", handleTouchMove);
+                map.addEventListener("touchend", handleTouchEnd);
+            }
+        };
+
+        map?.addEventListener("touchstart", handleTouchStart);
+
+        return () => {
+            map?.removeEventListener("touchstart", handleTouchStart);
+        };
     }, [map]);
 
     return (
@@ -133,7 +171,7 @@ const VietnamMap = () => {
                 <SearchBox setPosition={handleEndChange} type="end" />
             </div>
 
-            <div className="fixed z-50 bottom-4 right-4">
+            <div className="fixed z-50 bottom-4 right-4 flex flex-col items-end">
                 <button
                     onClick={locateUser}
                     className="bg-green-500 p-3 m-2 text-white p-2 rounded-lg hover:bg-green-600 transition duration-300"
@@ -146,6 +184,7 @@ const VietnamMap = () => {
                 >
                     <FontAwesomeIcon icon={faDirections} />
                 </button>
+                <Knob onRotate={handleRotate} />
             </div>
         </div>
     );
