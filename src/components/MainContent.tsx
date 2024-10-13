@@ -5,7 +5,6 @@ import { useState, useEffect } from "react";
 import SearchBox from "./SearchBox";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLocation, faDirections } from '@fortawesome/free-solid-svg-icons';
-import Knob from "./Knob"; // Import Knob component
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import L from 'leaflet';
 import 'leaflet-routing-machine';
@@ -23,7 +22,6 @@ const VietnamMap = () => {
     const [endMarkerLayer, setEndMarkerLayer] = useState<any>(null);
     
     const [startText, setStartText] = useState("");
-    const [rotation, setRotation] = useState(0); // Thêm state cho góc xoay
 
     const locateUser = () => {
         if (navigator.geolocation) {
@@ -95,12 +93,6 @@ const VietnamMap = () => {
         }
     };
 
-    const handleRotate = (angle: number) => {
-        setRotation(angle);
-        if (map) {
-            map.getContainer().style.transform = `rotate(${angle}deg)`;
-        }
-    };
 
     useEffect(() => {
         if (map) {
@@ -109,40 +101,6 @@ const VietnamMap = () => {
                 map.setZoom(zoomIn);
             });
         }
-    }, [map]);
-    // Touch event handling for rotation
-    useEffect(() => {
-        const handleTouchStart = (e: TouchEvent) => {
-            const startX = e.touches[0].clientX;
-            const startY = e.touches[0].clientY;
-
-            const handleTouchMove = (e: TouchEvent) => {
-                const currentX = e.touches[0].clientX;
-                const currentY = e.touches[0].clientY;
-                const deltaX = currentX - startX;
-                const deltaY = currentY - startY;
-                const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
-
-                handleRotate(angle);
-            };
-
-            const handleTouchEnd = () => {
-                if (map) {
-                map.removeEventListener("touchmove", handleTouchMove);
-                map.removeEventListener("touchend", handleTouchEnd);
-                }
-            };
-            if (map) {
-                map.addEventListener("touchmove", handleTouchMove);
-                map.addEventListener("touchend", handleTouchEnd);
-            }
-        };
-
-        map?.addEventListener("touchstart", handleTouchStart);
-
-        return () => {
-            map?.removeEventListener("touchstart", handleTouchStart);
-        };
     }, [map]);
 
     return (
@@ -184,7 +142,6 @@ const VietnamMap = () => {
                 >
                     <FontAwesomeIcon icon={faDirections} />
                 </button>
-                <Knob onRotate={handleRotate} />
             </div>
         </div>
     );
