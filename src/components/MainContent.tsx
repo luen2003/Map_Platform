@@ -64,15 +64,9 @@ const VietnamMap = () => {
         if (endMarkerLayer) {
             map.removeLayer(endMarkerLayer);
         }
-        const redMarker = L.marker(newEnd, {
-            icon: L.icon({
-                iconUrl: '/marker.png',
-                iconSize: [30, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-            }),
-        }).addTo(map);
-        setEndMarkerLayer(redMarker);
+        const marker = L.marker(newEnd).addTo(map);
+        setEndMarkerLayer(marker);
+        map.setView(newEnd, zoomIn);
     };
 
     const handleRoute = () => {
