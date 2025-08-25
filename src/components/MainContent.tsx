@@ -136,22 +136,46 @@ const VietnamMap = () => {
         setRoutingControl(control);
     };
 
-    // Effect xử lý đọc query param lat & lon, nếu có thì set vị trí tự động
-    useEffect(() => {
-        if (!map) return;
+useEffect(() => {
+    if (!map) return;
 
-        const params = new URLSearchParams(window.location.search);
-        const lat = params.get("lat");
-        const lon = params.get("lon");
+    const params = new URLSearchParams(window.location.search);
+    const lat = params.get("lat");
+    const lon = params.get("lon");
+    const query = params.get("q");
 
-        if (lat && lon) {
-            const latNum = parseFloat(lat);
-            const lonNum = parseFloat(lon);
-            if (!isNaN(latNum) && !isNaN(lonNum)) {
-                setLocation(latNum, lonNum, `Vị trí từ URL: [${latNum.toFixed(4)}, ${lonNum.toFixed(4)}]`);
-            }
+    if (lat && lon) {
+        const latNum = parseFloat(lat);
+        const lonNum = parseFloat(lon);
+        if (!isNaN(latNum) && !isNaN(lonNum)) {
+            setLocation(latNum, lonNum, `Vị trí từ URL: [${latNum.toFixed(4)}, ${lonNum.toFixed(4)}]`);
+            return; // Ưu tiên lat/lon nếu có
         }
-    }, [map]);
+    }
+
+    if (query) {
+        const fetchLocation = async () => {
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+
+                if (data && data.length > 0) {
+                    const firstResult = data[0];
+                    const lat = parseFloat(firstResult.lat);
+                    const lon = parseFloat(firstResult.lon);
+                    setLocation(lat, lon, `Địa điểm: ${query}`);
+                } else {
+                    alert("Không tìm thấy địa điểm.");
+                }
+            } catch (err) {
+                console.error("Lỗi khi tìm địa điểm từ Nominatim:", err);
+            }
+        };
+
+        fetchLocation();
+    }
+}, [map]);
+
 
     useEffect(() => {
         if (map) {
