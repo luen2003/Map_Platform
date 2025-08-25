@@ -9,6 +9,14 @@ import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import L from 'leaflet';
 import 'leaflet-routing-machine';
 
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+});
+
 const zoomIn = 16;
 
 const VietnamMap = () => {
@@ -24,6 +32,36 @@ const VietnamMap = () => {
 
     const watchId = useRef<number | null>(null);
 
+    // Hàm để đặt marker và set vị trí map, dùng cho locateUser và tự động từ query
+    const setLocation = (lat: number, lon: number, text: string, zoom = zoomIn) => {
+        const newPos: [number, number] = [lat, lon];
+
+        setPosition(newPos);
+        setIsLocate(true);
+        setStart(newPos);
+        setEnd((prevEnd) => prevEnd || newPos);
+        setStartText(text);
+
+        if (map) {
+            map.setView(newPos, zoom);
+        }
+
+        if (markerLayer) {
+            markerLayer.setLatLng(newPos);
+        } else if (map) {
+            const marker = L.marker(newPos).addTo(map);
+            setMarkerLayer(marker);
+        }
+
+        // Nếu đang có tuyến đường, cập nhật lại
+        if (start && end && routingControl) {
+            routingControl.setWaypoints([
+                L.latLng(newPos[0], newPos[1]),
+                L.latLng(end[0], end[1]),
+            ]);
+        }
+    };
+
     const locateUser = () => {
         if (!navigator.geolocation) {
             alert("Geolocation is not supported by this browser.");
@@ -37,33 +75,11 @@ const VietnamMap = () => {
         watchId.current = navigator.geolocation.watchPosition(
             (position) => {
                 const { latitude, longitude } = position.coords;
-                const newPos: [number, number] = [latitude, longitude];
-
-                setPosition(newPos);
-                setIsLocate(true);
-                setStart(newPos);
-                setEnd((prevEnd) => prevEnd || newPos);
-                setStartText(`Vị trí hiện tại: [${latitude.toFixed(4)}, ${longitude.toFixed(4)}]`);
-
-                if (map) {
-                    map.setView(newPos, zoomIn);
-                }
-
-                // Cập nhật marker nếu đã tồn tại
-                if (markerLayer) {
-                    markerLayer.setLatLng(newPos);
-                } else if (map) {
-                    const marker = L.marker(newPos).addTo(map);
-                    setMarkerLayer(marker);
-                }
-
-                // Nếu đang có tuyến đường, cập nhật lại
-                if (start && end && routingControl) {
-                    routingControl.setWaypoints([
-                        L.latLng(newPos[0], newPos[1]),
-                        L.latLng(end[0], end[1]),
-                    ]);
-                }
+                setLocation(
+                    latitude,
+                    longitude,
+                    `Vị trí hiện tại: [${latitude.toFixed(4)}, ${longitude.toFixed(4)}]`
+                );
             },
             (error) => {
                 console.error("Error getting user location:", error);
@@ -120,6 +136,23 @@ const VietnamMap = () => {
         setRoutingControl(control);
     };
 
+    // Effect xử lý đọc query param lat & lon, nếu có thì set vị trí tự động
+    useEffect(() => {
+        if (!map) return;
+
+        const params = new URLSearchParams(window.location.search);
+        const lat = params.get("lat");
+        const lon = params.get("lon");
+
+        if (lat && lon) {
+            const latNum = parseFloat(lat);
+            const lonNum = parseFloat(lon);
+            if (!isNaN(latNum) && !isNaN(lonNum)) {
+                setLocation(latNum, lonNum, `Vị trí từ URL: [${latNum.toFixed(4)}, ${lonNum.toFixed(4)}]`);
+            }
+        }
+    }, [map]);
+
     useEffect(() => {
         if (map) {
             map.on('click', (e: L.LeafletMouseEvent) => {
@@ -164,13 +197,15 @@ const VietnamMap = () => {
             <div className="fixed z-50 bottom-4 right-4 flex flex-col items-end">
                 <button
                     onClick={locateUser}
-                    className="bg-green-500 p-3 m-2 text-white p-2 rounded-lg hover:bg-green-600 transition duration-300"
+                    className="bg-green-500 p-3 m-2 text-white rounded-lg hover:bg-green-600 transition duration-300"
+                    title="Định vị vị trí hiện tại"
                 >
                     <FontAwesomeIcon icon={faLocation} />
                 </button>
                 <button
                     onClick={handleRoute}
-                    className="bg-blue-500 p-3 m-2 text-white p-2 rounded-lg hover:bg-blue-600 transition duration-300"
+                    className="bg-blue-500 p-3 m-2 text-white rounded-lg hover:bg-blue-600 transition duration-300"
+                    title="Tạo tuyến đường"
                 >
                     <FontAwesomeIcon icon={faDirections} />
                 </button>
