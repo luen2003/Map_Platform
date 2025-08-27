@@ -14,7 +14,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Leaflet CSS with SRI + CORS */}
         <link
           rel="stylesheet"
           href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
