@@ -163,7 +163,7 @@ useEffect(() => {
                     const firstResult = data[0];
                     const lat = parseFloat(firstResult.lat);
                     const lon = parseFloat(firstResult.lon);
-                    setLocation(lat, lon, `Địa điểm: ${query} - Tọa độ: [${lat.toFixed(4)}, ${lon.toFixed(4)}]`);
+                    setLocation(lat, lon, `Địa điểm: ${query} - Vị trí: [${lat.toFixed(4)}, ${lon.toFixed(4)}]`);
                 } else {
                     alert("Không tìm thấy địa điểm.");
                 }
