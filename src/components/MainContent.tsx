@@ -60,18 +60,18 @@ const VietnamMap = () => {
     //         map.removeLayer(ngheanMarker);
     //     };
     // }, [map]);
-    useEffect(() => {
-        if (!map) return;
+    // useEffect(() => {
+    //     if (!map) return;
 
-        const hanoi: [number, number] = [21.0285, 105.8542];
-        const hanoiMarker = L.marker(hanoi)
-            .addTo(map)
-            .bindPopup("Hà Nội");
+    //     const hanoi: [number, number] = [21.0285, 105.8542];
+    //     const hanoiMarker = L.marker(hanoi)
+    //         .addTo(map)
+    //         .bindPopup("Hà Nội");
 
-        return () => {
-            map.removeLayer(hanoiMarker);
-        };
-    }, [map]);
+    //     return () => {
+    //         map.removeLayer(hanoiMarker);
+    //     };
+    // }, [map]);
     const watchId = useRef<number | null>(null);
 
     // Hàm để đặt marker và set vị trí map, dùng cho locateUser và tự động từ query
@@ -105,30 +105,27 @@ const VietnamMap = () => {
     };
 
     const locateUser = () => {
-        if (!navigator.geolocation) {
-            alert("Geolocation is not supported by this browser.");
-            return;
-        }
+    if (!navigator.geolocation) {
+        alert("Geolocation is not supported by this browser.");
+        return;
+    }
 
-        if (watchId.current !== null) {
-            navigator.geolocation.clearWatch(watchId.current);
-        }
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const { latitude, longitude } = position.coords;
 
-        watchId.current = navigator.geolocation.watchPosition(
-            (position) => {
-                const { latitude, longitude } = position.coords;
-                setLocation(
-                    latitude,
-                    longitude,
-                    `Vị trí hiện tại: [${latitude.toFixed(4)}, ${longitude.toFixed(4)}]`
-                );
-            },
-            (error) => {
-                console.error("Error getting user location:", error);
-            },
-            { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
-        );
-    };
+            setLocation(
+                latitude,
+                longitude,
+                `Vị trí hiện tại: [${latitude.toFixed(4)}, ${longitude.toFixed(4)}]`
+            );
+        },
+        (error) => {
+            console.error("Error getting user location:", error);
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+    );
+};
 
     const handleStartChange = (newStart: [number, number], text: string) => {
         setStart(newStart);
