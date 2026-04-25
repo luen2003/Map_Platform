@@ -35,18 +35,18 @@ const VietnamMap = () => {
         queryMarkers.forEach(marker => map.removeLayer(marker));
         setQueryMarkers([]);
     };
-    useEffect(() => {
-        if (!map) return;
+    // useEffect(() => {
+    //     if (!map) return;
 
-        const nghean: [number, number] = [19.1976001, 105.060676];
-        const ngheanMarker = L.marker(nghean)
-            .addTo(map)
-            .bindPopup("Nghệ An");
+    //     const nghean: [number, number] = [19.1976001, 105.060676];
+    //     const ngheanMarker = L.marker(nghean)
+    //         .addTo(map)
+    //         .bindPopup("Nghệ An");
 
-        return () => {
-            map.removeLayer(ngheanMarker);
-        };
-    }, [map]);
+    //     return () => {
+    //         map.removeLayer(ngheanMarker);
+    //     };
+    // }, [map]);
 
     // useEffect(() => {
     //     if (!map) return;
