@@ -31,47 +31,12 @@ const VietnamMap = () => {
     const [markerLayer, setMarkerLayer] = useState<any>(null);
     const [endMarkerLayer, setEndMarkerLayer] = useState<any>(null);
     const [startText, setStartText] = useState("");
+
     const clearQueryMarkers = () => {
         queryMarkers.forEach(marker => map.removeLayer(marker));
         setQueryMarkers([]);
     };
-    // useEffect(() => {
-    //     if (!map) return;
 
-    //     const nghean: [number, number] = [19.1976001, 105.060676];
-    //     const ngheanMarker = L.marker(nghean)
-    //         .addTo(map)
-    //         .bindPopup("Nghệ An");
-
-    //     return () => {
-    //         map.removeLayer(ngheanMarker);
-    //     };
-    // }, [map]);
-
-    // useEffect(() => {
-    //     if (!map) return;
-
-    //     const nghean: [number, number] = [19.1976001,105.060676];
-    //     const ngheanMarker = L.marker(nghean)
-    //         .addTo(map)
-    //         .bindPopup("Nghệ An");
-
-    //     return () => {
-    //         map.removeLayer(ngheanMarker);
-    //     };
-    // }, [map]);
-    // useEffect(() => {
-    //     if (!map) return;
-
-    //     const hanoi: [number, number] = [21.0285, 105.8542];
-    //     const hanoiMarker = L.marker(hanoi)
-    //         .addTo(map)
-    //         .bindPopup("Hà Nội");
-
-    //     return () => {
-    //         map.removeLayer(hanoiMarker);
-    //     };
-    // }, [map]);
     const watchId = useRef<number | null>(null);
 
     // Hàm để đặt marker và set vị trí map, dùng cho locateUser và tự động từ query
@@ -105,27 +70,27 @@ const VietnamMap = () => {
     };
 
     const locateUser = () => {
-    if (!navigator.geolocation) {
-        alert("Geolocation is not supported by this browser.");
-        return;
-    }
+        if (!navigator.geolocation) {
+            alert("Geolocation is not supported by this browser.");
+            return;
+        }
 
-    navigator.geolocation.getCurrentPosition(
-        (position) => {
-            const { latitude, longitude } = position.coords;
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
 
-            setLocation(
-                latitude,
-                longitude,
-                `Vị trí hiện tại: [${latitude.toFixed(4)}, ${longitude.toFixed(4)}]`
-            );
-        },
-        (error) => {
-            console.error("Error getting user location:", error);
-        },
-        { enableHighAccuracy: true, timeout: 10000 }
-    );
-};
+                setLocation(
+                    latitude,
+                    longitude,
+                    `Vị trí hiện tại: [${latitude.toFixed(4)}, ${longitude.toFixed(4)}]`
+                );
+            },
+            (error) => {
+                console.error("Error getting user location:", error);
+            },
+            { enableHighAccuracy: true, timeout: 10000 }
+        );
+    };
 
     const handleStartChange = (newStart: [number, number], text: string) => {
         setStart(newStart);
@@ -174,46 +139,6 @@ const VietnamMap = () => {
 
         setRoutingControl(control);
     };
-
-    // useEffect(() => {
-    //     if (!map) return;
-
-    //     const params = new URLSearchParams(window.location.search);
-    //     const lat = params.get("lat");
-    //     const lon = params.get("lon");
-    //     const query = params.get("q");
-
-    //     if (lat && lon) {
-    //         const latNum = parseFloat(lat);
-    //         const lonNum = parseFloat(lon);
-    //         if (!isNaN(latNum) && !isNaN(lonNum)) {
-    //             setLocation(latNum, lonNum, `Vị trí từ URL: [${latNum.toFixed(4)}, ${lonNum.toFixed(4)}]`);
-    //             return; // Ưu tiên lat/lon nếu có
-    //         }
-    //     }
-
-    //     if (query) {
-    //         const fetchLocation = async () => {
-    //             try {
-    //                 const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
-    //                 const data = await response.json();
-
-    //                 if (data && data.length > 0) {
-    //                     const firstResult = data[0];
-    //                     const lat = parseFloat(firstResult.lat);
-    //                     const lon = parseFloat(firstResult.lon);
-    //                     setLocation(lat, lon, `Địa điểm: ${query} - Vị trí: [${lat.toFixed(4)}, ${lon.toFixed(4)}]`);
-    //                 } else {
-    //                     alert("Không tìm thấy địa điểm.");
-    //                 }
-    //             } catch (err) {
-    //                 console.error("Lỗi khi tìm địa điểm từ Nominatim:", err);
-    //             }
-    //         };
-
-    //         fetchLocation();
-    //     }
-    // }, [map]);
 
     useEffect(() => {
         if (!map) return;
@@ -280,6 +205,7 @@ const VietnamMap = () => {
             fetchCities();
         }
     }, [map]);
+
     useEffect(() => {
         if (!map) return;
 
@@ -366,22 +292,22 @@ const VietnamMap = () => {
                 )}
             </MapContainer>
 
-            <div className="fixed z-50 top-4 left-1/2 transform -translate-x-1/2 flex space-x-4">
-                <SearchBox setPosition={(newStart, text) => handleStartChange(newStart, text)} type="start" value={startText} />
+            {/* SỬA CLASS Ở ĐÂY ĐỂ TRÁNH ĐÈ LÊN NÚT ZOOM TRÊN MOBILE */}
+            <div className="fixed z-50 top-4 left-12 md:left-1/2 md:transform md:-translate-x-1/2 flex space-x-2 md:space-x-4">                <SearchBox setPosition={(newStart, text) => handleStartChange(newStart, text)} type="start" value={startText} />
                 <SearchBox setPosition={(newEnd, _) => handleEndChange(newEnd)} type="end" />
             </div>
 
             <div className="fixed z-50 bottom-4 right-4 flex flex-col items-end">
                 <button
                     onClick={locateUser}
-                    className="bg-green-500 p-3 m-2 text-white rounded-lg hover:bg-green-600 transition duration-300"
+                    className="bg-green-500 p-3 m-2 text-white rounded-lg hover:bg-green-600 transition duration-300 shadow-md"
                     title="Định vị vị trí hiện tại"
                 >
                     <FontAwesomeIcon icon={faLocation} />
                 </button>
                 <button
                     onClick={handleRoute}
-                    className="bg-blue-500 p-3 m-2 text-white rounded-lg hover:bg-blue-600 transition duration-300"
+                    className="bg-blue-500 p-3 m-2 text-white rounded-lg hover:bg-blue-600 transition duration-300 shadow-md"
                     title="Tạo tuyến đường"
                 >
                     <FontAwesomeIcon icon={faDirections} />
